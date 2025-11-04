@@ -10,12 +10,9 @@
     --blue-dark: #0f172a;
     --blue: #2563eb;
     --blue-light: #60a5fa;
-    --blue-bg1: #dbeafe;
-    --blue-bg2: #eff6ff;
     --white: #ffffff;
     --muted: #64748b;
   }
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
@@ -32,7 +29,7 @@
   .wrap {
     width: 100%;
     max-width: 1200px;
-    background: linear-gradient(180deg, rgba(255,255,255,0.97), var(--blue-bg2));
+    background: linear-gradient(180deg, rgba(255,255,255,0.97), #e0f2fe);
     border-radius: 28px;
     box-shadow: 0 25px 70px rgba(0,0,0,0.25);
     padding: 60px;
@@ -40,22 +37,24 @@
     backdrop-filter: blur(12px);
   }
 
+  /* Enhanced title */
   h1 {
-    font-size: 90px;
+    font-size: 100px;
     font-weight: 300;
-    font-family: "Poppins", "Inter", sans-serif;
-    background: linear-gradient(90deg, #93c5fd, #3b82f6, #2563eb);
+    font-family: "Poppins", sans-serif;
+    background: linear-gradient(90deg, #e0f2fe 0%, #93c5fd 20%, #3b82f6 40%, #1e40af 60%, #3b82f6 80%, #e0f2fe 100%);
+    background-size: 300%;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    letter-spacing: 3px;
-    margin-bottom: 10px;
-    text-shadow: 0 0 25px rgba(96,165,250,0.35);
-    animation: glow 6s ease-in-out infinite alternate;
+    letter-spacing: 4px;
+    margin-bottom: 12px;
+    animation: shimmer 10s linear infinite;
+    text-shadow: 0 0 30px rgba(96,165,250,0.4);
   }
 
-  @keyframes glow {
-    from { text-shadow: 0 0 20px rgba(96,165,250,0.25), 0 0 40px rgba(37,99,235,0.25); }
-    to { text-shadow: 0 0 35px rgba(96,165,250,0.45), 0 0 60px rgba(37,99,235,0.45); }
+  @keyframes shimmer {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
   }
 
   p.lead {
@@ -73,7 +72,7 @@
   }
 
   .card {
-    background: linear-gradient(180deg, #ffffff, var(--blue-bg1));
+    background: linear-gradient(180deg, #ffffff, #dbeafe);
     border-radius: 20px;
     padding: 30px 24px;
     text-decoration: none;
@@ -123,14 +122,14 @@
 
   @media (max-width: 700px) {
     .wrap { padding: 30px 20px; }
-    h1 { font-size: 58px; letter-spacing: 2px; }
+    h1 { font-size: 60px; letter-spacing: 2px; }
   }
 </style>
 </head>
 <body>
   <div class="wrap">
     <h1>Daabolla</h1>
-    <p class="lead">Your personal collection of smooth, modern web tools.</p>
+    <p class="lead">Personal collection of modern web tools</p>
 
     <div class="grid">
       <a class="card" href="currency_converter.html">
