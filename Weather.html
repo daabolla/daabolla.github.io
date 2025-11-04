@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Daabolla — Weather</title>
+<link rel="icon" href="data:;base64,iVBORw0KGgo=">
+<style>
+  :root{
+    --bg1:#eff6ff; --bg2:#dbeafe;
+    --card:#ffffff; --muted:#64748b;
+    --accent:#2563eb; --accent-2:#60a5fa;
+    --glass: rgba(255,255,255,0.8);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial; 
+    background: linear-gradient(180deg,var(--bg2), #e8f0ff);
+    color:#0f172a; padding:28px; min-height:100vh; display:flex; align-items:center; justify-content:center;
+  }
+  .wrap{ width:100%; max-width:980px; background:linear-gradient(180deg,var(--glass),var(--card)); border-radius:16px; box-shadow:0 18px 50px rgba(12,15,30,0.08); padding:20px; }
+  header{ display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:14px;}
+  .brand{ display:flex; gap:12px; align-items:center;}
+  .logo{ width:54px; height:54px; border-radius:12px; background:linear-gradient(135deg,var(--accent),var(--accent-2)); color:white; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:22px; box-shadow:0 8px 24px rgba(37,99,235,0.16); }
+  h1{ margin:0; font-size:20px; letter-spacing: -0.2px; }
+  .lead{ color:var(--muted); font-size:13px; margin-top:4px; }
+  .controls{ display:flex; gap:8px; align-items:center; }
+  input[type="search"]{ padding:10px 12px; border-radius:10px; border:1px solid #e6eefc; width:260px; }
+  button{ background:var(--accent); color:white; border:none; padding:10px 12px; border-radius:10px; cursor:pointer; font-weight:600; }
+  button.secondary{ background:transparent; color:var(--accent); border:1px solid rgba(37,99,235,0.12); font-weight:700; padding:8px 10px; }
+  main{ display:grid; grid-template-columns: 1fr 340px; gap:18px; }
+  .card{ background:white; border-radius:12px; padding:16px; box-shadow:0 6px 20px rgba(12,15,30,0.04); border:1px solid #f1f6ff; }
+  .current{ display:flex; gap:18px; align-items:center; }
+  .big-temp{ font-size:48px; font-weight:700; }
+  .cond{ font-size:14px; color:var(--muted); }
+  .meta{ font-size:13px; color:var(--muted); margin-top:6px; }
+  .icon-box{ width:96px; height:96px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:linear-gradient(135deg, rgba(37,99,235,0.08), rgba(96,165,250,0.03)); }
+  .forecast{ display:flex; gap:8px; margin-top:12px; }
+  .day{ flex:1; background:linear-gradient(180deg,#ffffff,#f8fbff); border-radius:10px; padding:10px; text-align:center; border:1px solid #f0f6ff; }
+  .small{ font-size:13px; color:var(--muted); }
+  .footer{ text-align:right; color:var(--muted); font-size:13px; margin-top:12px; }
+
+  /* responsive */
+  @media (max-width: 900px){
+    main{ grid-template-columns:1fr; }
+    .controls{ flex-wrap:wrap; }
+    input[type="search"]{ width:100%; }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap" role="main" aria-labelledby="title">
+    <header>
+      <div class="brand">
+        <div class="logo">D</div>
+        <div>
+          <h1 id="title">Daabolla — Weather</h1>
+          <div class="lead">Search city or use your location to see the weather</div>
+        </div>
+      </div>
+
+      <div class="controls" aria-label="controls">
+        <input id="search" type="search" placeholder="Search city (e.g. Warsaw, London)" aria-label="Search city">
+        <button id="searchBtn">Search</button>
+        <button id="locBtn" class="secondary">Use my location</button>
+      </div>
+    </header>
+
+    <main>
+      <!-- left: current + forecast -->
+      <section>
+        <div class="card" id="currentCard" aria-live="polite">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div class="small" id="place">—</div>
+              <div class="current" style="margin-top:8px;">
+                <div class="icon-box" id="weatherIcon" aria-hidden="true">
+                  <!-- icon -->
+                  <svg id="iconSvg" width="48" height="48" viewBox="0 0 24 24" fill="none"><path d="" /></svg>
+                </div>
+                <div>
+                  <div class="big-temp" id="temp">—°C</div>
+                  <div class="cond" id="condition">—</div>
+                  <div class="meta" id="meta">Wind: — m/s • Direction: —</div>
+                </div>
+              </div>
+            </div>
+
+            <div style="text-align:right;">
+              <div class="small">Last updated</div>
+              <div id="lastUpdated" class="small">—</div>
+              <div style="margin-top:8px;">
+                <button id="refreshBtn" class="secondary">Refresh</button>
+              </div>
+            </div>
+          </div>
+
+          <hr style="margin:14px 0; border:none; border-top:1px solid #f1f6ff" />
+
+          <div class="small">3-day forecast</div>
+          <div class="forecast" id="forecast"></div>
+        </div>
+
+        <div style="height:16px"></div>
+
+        <div class="card" id="hourCard">
+          <div class="small">Hourly (next 12 hours)</div>
+          <div id="hourly" style="display:flex; gap:8px; margin-top:10px; overflow:auto; padding-bottom:8px;"></div>
+        </div>
+      </section>
+
+      <!-- right: location suggestions & debug -->
+      <aside>
+        <div class="card">
+          <div class="small" style="margin-bottom:8px">Search results</div>
+          <div id="results" style="display:flex; flex-direction:column; gap:8px"></div>
+          <div style="height:10px"></div>
+          <div class="small" style="margin-bottom:8px">Quick cities</div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;">
+            <button class="secondary quick" data-city="Warsaw">Warsaw</button>
+            <button class="secondary quick" data-city="London">London</button>
+            <button class="secondary quick" data-city="New York">New York</button>
+            <button class="secondary quick" data-city="Tokyo">Tokyo</button>
+            <button class="secondary quick" data-city="Berlin">Berlin</button>
+          </div>
+        </div>
+
+        <div style="height:12px"></div>
+
+        <div class="card">
+          <div class="small">Info</div>
+          <div class="small muted" id="info" style="margin-top:8px"></div>
+        </div>
+      </aside>
+    </main>
+
+    <div class="footer">Powered by Open-Meteo • Free & no API key required</div>
+  </div>
+
+<script>
+/*
+ Weather app using Open-Meteo (no API key).
+ Geocoding: https://geocoding-api.open-meteo.com/v1/search?name=City
+ Forecast: https://api.open-meteo.com/v1/forecast?latitude=...&longitude=...&current_weather=true&hourly=temperature_2m,apparent_temperature&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto
+*/
+
+const els = {
+  search: document.getElementById('search'),
+  searchBtn: document.getElementById('searchBtn'),
+  locBtn: document.getElementById('locBtn'),
+  results: document.getElementById('results'),
+  place: document.getElementById('place'),
+  temp: document.getElementById('temp'),
+  condition: document.getElementById('condition'),
+  meta: document.getElementById('meta'),
+  lastUpdated: document.getElementById('lastUpdated'),
+  refreshBtn: document.getElementById('refreshBtn'),
+  forecast: document.getElementById('forecast'),
+  hourly: document.getElementById('hourly'),
+  info: document.getElementById('info'),
+  weatherIcon: document.getElementById('weatherIcon'),
+};
+
+let currentLocation = null; // {name, lat, lon, country}
+let lastFetched = null;
+let autoTimer = null;
+const AUTO_REFRESH_MS = 10 * 60 * 1000; // 10 minutes
+
+function setInfo(text){ els.info.textContent = text; }
+function setLastUpdated(d){ els.lastUpdated.textContent = d ? new Date(d).toLocaleString() : '—'; }
+
+function weatherCodeToText(code){
+  // Based on Open-Meteo weathercode mapping
+  const map = {
+    0: 'Clear sky', 1:'Mainly clear', 2:'Partly cloudy', 3:'Overcast',
+    45:'Fog', 48:'Depositing rime fog',
+    51:'Light drizzle', 53:'Moderate drizzle', 55:'Dense drizzle',
+    56:'Freezing drizzle', 57:'Dense freezing drizzle',
+    61:'Slight rain', 63:'Moderate rain', 65:'Heavy rain',
+    66:'Freezing rain', 67:'Heavy freezing rain',
+    71:'Slight snow', 73:'Moderate snow', 75:'Heavy snow',
+    77:'Snow grains', 80:'Slight rain showers', 81:'Moderate rain showers',
+    82:'Violent rain showers', 85:'Slight snow showers', 86:'Heavy snow showers',
+    95:'Thunderstorm', 96:'Thunderstorm with slight hail', 99:'Thunderstorm with heavy hail'
+  };
+  return map[code] || 'Unknown';
+}
+
+function weatherCodeToEmoji(code){
+  if (code === 0 || code === 1) return '☀️';
+  if (code === 2 || code === 3) return '⛅';
+  if ([45,48].includes(code)) return '🌫️';
+  if ([51,53,55,56,57,61,63,65,66,67,80,81,82].includes(code)) return '🌧️';
+  if ([71,73,75,77,85,86].includes(code)) return '❄️';
+  if ([95,96,99].includes(code)) return '⛈️';
+  return '🌤️';
+}
+
+async function geocodeCity(name){
+  const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(name)}&count=8&language=en&format=json`;
+  setInfo('Searching...');
+  try{
+    const r = await fetch(url);
+    if (!r.ok) throw new Error('Geocode failed: ' + r.status);
+    const data = await r.json();
+    setInfo('');
+    return data.results || [];
+  }catch(e){
+    setInfo('Geocoding failed');
+    console.error(e);
+    return [];
+  }
+}
+
+async function fetchWeather(lat, lon){
+  // request current, hourly, and daily summary (3 days)
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=temperature_2m,apparent_temperature,weathercode&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto&forecast_days=4`;
+  setInfo('Fetching weather...');
+  try{
+    const r = await fetch(url);
+    if (!r.ok) throw new Error('Forecast fetch failed: ' + r.status);
+    const data = await r.json();
+    setInfo('');
+    lastFetched = Date.now();
+    setLastUpdated(lastFetched);
+    return data;
+  }catch(e){
+    console.error(e);
+    setInfo('Weather fetch failed');
+    return null;
+  }
+}
+
+function renderCurrent(res, placeName){
+  if (!res || !res.current_weather) {
+    els.place.textContent = 'No data';
+    els.temp.textContent = '—';
+    els.condition.textContent = '—';
+    els.meta.textContent = '';
+    return;
+  }
+  const cw = res.current_weather;
+  // current_weather: temperature, windspeed, winddirection, weathercode, time
+  els.place.textContent = placeName;
+  els.temp.textContent = `${Math.round(cw.temperature)}°C`;
+  els.condition.textContent = weatherCodeToText(cw.weathercode);
+  els.meta.textContent = `Wind: ${cw.windspeed} m/s • Dir: ${Math.round(cw.winddirection)}° • Time: ${new Date(cw.time).toLocaleTimeString()}`;
+  // icon and emoji
+  const emoji = weatherCodeToEmoji(cw.weathercode);
+  els.weatherIcon.innerHTML = `<div style="font-size:44px">${emoji}</div>`;
+}
+
+function renderForecast(res){
+  // daily arrays: time, temperature_2m_max, temperature_2m_min, weathercode
+  const daily = res.daily;
+  if (!daily) { els.forecast.innerHTML = ''; return; }
+  const n = Math.min(daily.time.length, 4); // show up to 3 days + today
+  els.forecast.innerHTML = '';
+  for (let i=0;i<n;i++){
+    // skip index 0? show next 3 days including today
+    const dayName = new Date(daily.time[i]).toLocaleDateString(undefined, { weekday: 'short', month:'short', day:'numeric' });
+    const hi = Math.round(daily.temperature_2m_max[i]);
+    const lo = Math.round(daily.temperature_2m_min[i]);
+    const wc = daily.weathercode[i];
+    const emoji = weatherCodeToEmoji(wc);
+    const el = document.createElement('div');
+    el.className = 'day';
+    el.innerHTML = `<div class="small" style="font-weight:700">${dayName}</div>
+                    <div style="font-size:22px;margin:8px 0">${emoji}</div>
+                    <div style="font-weight:700">${hi}° / ${lo}°</div>
+                    <div class="small" style="margin-top:6px">${weatherCodeToText(wc)}</div>`;
+    els.forecast.appendChild(el);
+  }
+}
+
+function renderHourly(res){
+  // hourly: time[], temperature_2m[], weathercode[]
+  const hourly = res.hourly;
+  if (!hourly) { els.hourly.innerHTML = ''; return; }
+  // show next 12 hours starting from now
+  const now = new Date();
+  const items = [];
+  for (let i=0;i<hourly.time.length;i++){
+    const t = new Date(hourly.time[i]);
+    if (t < now) continue;
+    items.push({ t, temp: Math.round(hourly.temperature_2m[i]), wc: hourly.weathercode[i] });
+    if (items.length >= 12) break;
+  }
+  els.hourly.innerHTML = '';
+  items.forEach(it => {
+    const div = document.createElement('div');
+    div.style.minWidth = '84px';
+    div.style.padding = '8px';
+    div.style.background = 'linear-gradient(180deg,#fff,#fbfdff)';
+    div.style.borderRadius = '8px';
+    div.style.textAlign = 'center';
+    div.style.border = '1px solid #f0f6ff';
+    div.innerHTML = `<div class="small">${it.t.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</div>
+                     <div style="font-size:18px;margin:6px 0">${weatherCodeToEmoji(it.wc)}</div>
+                     <div style="font-weight:700">${it.temp}°</div>`;
+    els.hourly.appendChild(div);
+  });
+}
+
+/* Main flow: search -> choose location -> fetch -> render */
+
+async function searchAndShow(name){
+  const results = await geocodeCity(name);
+  els.results.innerHTML = '';
+  if (!results.length) {
+    els.results.innerHTML = '<div class="small">No results</div>';
+    return;
+  }
+  // If first result, show it and show list for alternatives
+  results.slice(0,6).forEach(r => {
+    const btn = document.createElement('button');
+    btn.className = 'secondary';
+    btn.style.textAlign = 'left';
+    btn.style.padding = '8px';
+    btn.textContent = `${r.name}${r.admin1 ? ', ' + r.admin1 : ''}${r.country ? ' — ' + r.country : ''}`;
+    btn.addEventListener('click', () => {
+      chooseLocation({ name: r.name + (r.admin1 ? ', ' + r.admin1 : '') + (r.country ? ' — ' + r.country: ''), lat: r.latitude, lon: r.longitude });
+    });
+    els.results.appendChild(btn);
+  });
+  // Auto select the first result
+  const first = results[0];
+  chooseLocation({ name: first.name + (first.admin1 ? ', ' + first.admin1 : '') + (first.country ? ' — ' + first.country : ''), lat: first.latitude, lon: first.longitude });
+}
+
+async function chooseLocation(loc){
+  currentLocation = loc;
+  els.results.innerHTML = '';
+  await updateWeatherForCurrent();
+}
+
+async function updateWeatherForCurrent(){
+  if (!currentLocation) return;
+  const data = await fetchWeather(currentLocation.lat, currentLocation.lon);
+  if (!data) return;
+  renderCurrent(data, currentLocation.name);
+  renderForecast(data);
+  renderHourly(data);
+  setInfo('');
+  // restart auto refresh timer
+  if (autoTimer) clearInterval(autoTimer);
+  autoTimer = setInterval(async () => {
+    const d = await fetchWeather(currentLocation.lat, currentLocation.lon);
+    if (d){ renderCurrent(d, currentLocation.name); renderForecast(d); renderHourly(d); }
+  }, AUTO_REFRESH_MS);
+}
+
+els.searchBtn.addEventListener('click', ()=> {
+  const q = els.search.value.trim();
+  if (!q) return;
+  searchAndShow(q);
+});
+
+els.search.addEventListener('keydown', (e)=> {
+  if (e.key === 'Enter') { e.preventDefault(); els.searchBtn.click(); }
+});
+
+els.locBtn.addEventListener('click', async ()=>{
+  if (!navigator.geolocation) { setInfo('Geolocation not supported'); return; }
+  setInfo('Getting location...');
+  navigator.geolocation.getCurrentPosition(async pos => {
+    const lat = pos.coords.latitude, lon = pos.coords.longitude;
+    // reverse geocode (use open-meteo reverse geocoding via search with lat/lon? We'll format a name)
+    const name = `Lat ${lat.toFixed(2)}, Lon ${lon.toFixed(2)}`;
+    currentLocation = { name, lat, lon };
+    await updateWeatherForCurrent();
+  }, err => { setInfo('Unable to get location'); console.error(err); });
+});
+
+els.refreshBtn.addEventListener('click', async ()=> {
+  if (!currentLocation) return;
+  const d = await fetchWeather(currentLocation.lat, currentLocation.lon);
+  if (d){ renderCurrent(d, currentLocation.name); renderForecast(d); renderHourly(d); }
+});
+
+// quick city buttons
+document.querySelectorAll('.quick').forEach(b => {
+  b.addEventListener('click', ()=> {
+    const name = b.dataset.city;
+    els.search.value = name;
+    searchAndShow(name);
+  });
+});
+
+// simple helper: when page loads, show a default city
+window.addEventListener('load', ()=> {
+  // if you want a default, pick Warsaw (PL)
+  const defaultCity = 'Warsaw';
+  els.search.value = defaultCity;
+  searchAndShow(defaultCity);
+});
+</script>
+</body>
+</html>
