@@ -2,194 +2,163 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Daabolla Tools</title>
 <link rel="icon" href="data:;base64,iVBORw0KGgo=">
 <style>
   :root {
-    --bg1: #eef2ff;
-    --bg2: #f0f6ff;
-    --card: #ffffff;
-    --muted: #6b7280;
-    --accent: #2563eb;
-    --accent-2: #7c3aed;
+    --blue-dark: #0f172a;
+    --blue: #2563eb;
+    --blue-light: #60a5fa;
+    --blue-bg1: #dbeafe;
+    --blue-bg2: #eff6ff;
+    --white: #ffffff;
+    --muted: #64748b;
   }
-  * { box-sizing: border-box; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
   body {
-    margin: 0;
-    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-    background: linear-gradient(180deg, var(--bg1) 0%, var(--bg2) 100%);
-    color: #0f172a;
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: linear-gradient(135deg, var(--blue-light) 0%, var(--blue) 100%);
+    color: var(--blue-dark);
     min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 28px;
+    padding: 40px;
   }
 
   .wrap {
     width: 100%;
-    max-width: 1100px;
-    background: linear-gradient(180deg, rgba(255,255,255,0.85), var(--card));
-    border-radius: 14px;
-    box-shadow: 0 12px 40px rgba(14,18,40,0.08);
-    padding: 28px;
+    max-width: 1200px;
+    background: linear-gradient(180deg, var(--white), var(--blue-bg2));
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(15, 23, 42, 0.2);
+    padding: 50px;
+    text-align: center;
   }
 
   header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 16px;
+    margin-bottom: 40px;
   }
-  .brand {
-    display: flex;
-    gap: 14px;
-    align-items: center;
-  }
+
   .logo {
-    width: 56px;
-    height: 56px;
-    border-radius: 12px;
-    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    width: 90px;
+    height: 90px;
+    margin: 0 auto 15px;
+    background: linear-gradient(135deg, var(--blue), var(--blue-light));
+    color: white;
+    font-weight: 800;
+    font-size: 30px;
+    border-radius: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
-    font-weight: 700;
-    font-size: 18px;
-    box-shadow: 0 6px 18px rgba(37,99,235,0.18);
-  }
-  h1 { margin: 0; font-size: 20px; }
-  p.lead { margin: 6px 0 0; color: var(--muted); font-size: 13px; }
-
-  main {
-    margin-top: 20px;
-    display: grid;
-    grid-template-columns: 1fr 360px;
-    gap: 18px;
-    align-items: start;
+    box-shadow: 0 10px 30px rgba(37,99,235,0.4);
   }
 
-  .hero {
-    background: linear-gradient(180deg, rgba(255,255,255,0.7), #fff);
-    padding: 18px;
-    border-radius: 12px;
-    border: 1px solid #f1f6ff;
+  h1 {
+    font-size: 42px;
+    font-weight: 800;
+    color: var(--blue-dark);
+    letter-spacing: -0.5px;
   }
-  .intro {
-    display: flex;
-    gap: 18px;
-    align-items: center;
+
+  p.lead {
+    margin-top: 8px;
+    font-size: 16px;
+    color: var(--muted);
   }
-  .intro h2 { margin: 0; font-size: 18px; }
-  .intro p { margin: 6px 0 0; color: var(--muted); font-size: 13px; }
 
   .grid {
-    margin-top: 16px;
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+    margin-top: 40px;
   }
+
   .card {
-    background: linear-gradient(180deg, #fff, #fbfdff);
-    border-radius: 12px;
-    padding: 14px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    align-items: flex-start;
-    border: 1px solid #f0f4ff;
-    transition: transform .18s ease, box-shadow .18s ease;
+    background: linear-gradient(180deg, var(--white), var(--blue-bg1));
+    border-radius: 18px;
+    padding: 30px 20px;
     text-decoration: none;
     color: inherit;
+    box-shadow: 0 10px 30px rgba(37,99,235,0.15);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
   }
+
   .card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 18px 40px rgba(15,20,40,0.08);
+    transform: translateY(-10px) scale(1.03);
+    box-shadow: 0 20px 50px rgba(37,99,235,0.3);
   }
-  .card .icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 10px;
+
+  .icon {
+    width: 70px;
+    height: 70px;
+    border-radius: 16px;
+    margin: 0 auto 15px;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
+    font-size: 30px;
     font-weight: 700;
-    font-size: 18px;
+    color: white;
   }
-  .card h3 { margin: 0; font-size: 14px; }
-  .card p { margin: 0; color: var(--muted); font-size: 13px; }
 
-  .c-blue { background: linear-gradient(135deg, #2563eb, #60a5fa); }
-  .c-purple { background: linear-gradient(135deg, #7c3aed, #a78bfa); }
-  .c-green { background: linear-gradient(135deg, #10b981, #6ee7b7); }
+  .blue { background: linear-gradient(135deg, #2563eb, #60a5fa); }
+  .purple { background: linear-gradient(135deg, #7c3aed, #a78bfa); }
+  .green { background: linear-gradient(135deg, #059669, #34d399); }
+
+  .card h3 {
+    font-size: 20px;
+    margin-bottom: 8px;
+    color: var(--blue-dark);
+  }
+
+  .card p {
+    font-size: 14px;
+    color: var(--muted);
+  }
 
   footer {
-    margin-top: 18px;
-    text-align: right;
+    margin-top: 50px;
     color: var(--muted);
-    font-size: 13px;
+    font-size: 14px;
   }
 
-  @media (max-width: 1000px) {
-    main { grid-template-columns: 1fr; }
-    .grid { grid-template-columns: repeat(2, 1fr); }
-  }
-  @media (max-width: 640px) {
-    .grid { grid-template-columns: 1fr; }
+  @media (max-width: 700px) {
+    .wrap { padding: 30px 20px; }
+    h1 { font-size: 34px; }
   }
 </style>
 </head>
 <body>
   <div class="wrap">
     <header>
-      <div class="brand">
-        <div class="logo">DT</div>
-        <div>
-          <h1>Daabolla Tools</h1>
-          <p class="lead">Access all your online utilities — Converter, Downloader, and Translator — from one dashboard.</p>
-        </div>
-      </div>
+      <div class="logo">DT</div>
+      <h1>Daabolla Tools</h1>
+      <p class="lead">Access your favorite online tools — simple, fast, and beautiful.</p>
     </header>
 
-    <main>
-      <section class="hero">
-        <div class="intro">
-          <div style="width:64px;height:64px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#60a5fa,#7c3aed);color:white;font-weight:700;font-size:20px">
-            DT
-          </div>
-          <div>
-            <h2>Welcome to Daabolla Tools</h2>
-            <p>Choose a tool below to get started instantly.</p>
-          </div>
-        </div>
+    <div class="grid">
+      <a class="card" href="currency_converter.html">
+        <div class="icon blue">₵</div>
+        <h3>Currency Converter</h3>
+        <p>Live rates and instant conversion between PLN, USD, EUR, and CHF.</p>
+      </a>
 
-        <div class="grid" style="margin-top:18px">
-          <!-- Currency Converter -->
-          <a class="card" href="currency_converter.html" title="Open Currency Converter">
-            <div class="icon c-blue">₵</div>
-            <h3>Currency Converter</h3>
-            <p>Live exchange rates and instant conversion between PLN, USD, EUR, and CHF.</p>
-          </a>
+      <a class="card" href="video-downloader.html">
+        <div class="icon purple">▶</div>
+        <h3>Video Downloader</h3>
+        <p>Download videos from multiple sources quickly and easily.</p>
+      </a>
 
-          <!-- Video Downloader -->
-          <a class="card" href="video-downloader.html" title="Open Video Downloader">
-            <div class="icon c-purple">▶</div>
-            <h3>Video Downloader</h3>
-            <p>Download your favorite videos quickly and easily from multiple sources.</p>
-          </a>
-
-          <!-- Translator -->
-          <a class="card" href="Translator.html" title="Open Translator">
-            <div class="icon c-green">文</div>
-            <h3>Polish ↔ English Translator</h3>
-            <p>Instant translations between Polish and English with copy and history features.</p>
-          </a>
-        </div>
-      </section>
-    </main>
+      <a class="card" href="Translator.html">
+        <div class="icon green">文</div>
+        <h3>Translator</h3>
+        <p>Polish ↔ English translations — fast, accurate, and simple to use.</p>
+      </a>
+    </div>
 
     <footer>
       © <span id="year"></span> Daabolla Tools — All rights reserved.
