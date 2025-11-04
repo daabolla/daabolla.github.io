@@ -12,6 +12,7 @@
     --blue-light: #60a5fa;
     --white: #ffffff;
     --muted: #64748b;
+    --card-bg: #e0f2fe;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -29,7 +30,7 @@
   .wrap {
     width: 100%;
     max-width: 1200px;
-    background: linear-gradient(180deg, rgba(255,255,255,0.97), #e0f2fe);
+    background: linear-gradient(180deg, rgba(255,255,255,0.97), var(--card-bg));
     border-radius: 28px;
     box-shadow: 0 25px 70px rgba(0,0,0,0.25);
     padding: 60px;
@@ -101,7 +102,8 @@
 
   .blue { background: linear-gradient(135deg, #2563eb, #60a5fa); }
   .purple { background: linear-gradient(135deg, #7c3aed, #a78bfa); }
-  .teal { background: linear-gradient(135deg, #0ea5a0, #34d399); }
+  .teal { background: linear-gradient(135deg, #059669, #34d399); }
+  .gold { background: linear-gradient(135deg, #f59e0b, #f97316); }
 
   .card h3 {
     font-size: 22px;
@@ -148,6 +150,12 @@
         <div class="icon teal">☀</div>
         <h3>Weather</h3>
         <p>Current weather and 3-day forecast — powered by Open-Meteo (no API key).</p>
+      </a>
+
+      <a class="card" href="favorites.html">
+        <div class="icon gold">★</div>
+        <h3>Favorites</h3>
+        <p>Your quick links and favorite websites — opens in a new tab.</p>
       </a>
     </div>
 
