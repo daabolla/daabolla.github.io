@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polish-English Translator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        main {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .language-selector {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .lang-box {
+            flex: 1;
+            max-width: 200px;
+        }
+
+        .lang-box select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+        }
+
+        .lang-box select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .swap-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .swap-btn:hover {
+            background: #5a6fd8;
+            transform: rotate(180deg);
+        }
+
+        .translation-area {
+            display: grid;
+            gap: 20px;
+        }
+
+        .input-section {
+            position: relative;
+        }
+
+        #sourceText {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 16px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 150px;
+            transition: border-color 0.3s ease;
+        }
+
+        #sourceText:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .char-count {
+            position: absolute;
+            bottom: 10px;
+            right: 15px;
+            font-size: 12px;
+            color: #666;
+            background: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .translate-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .translate-btn:hover:not(:disabled) {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+
+        .translate-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .clear-btn {
+            background: #f8f9fa;
+            color: #666;
+            border: 2px solid #e1e5e9;
+            padding: 14px 32px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .clear-btn:hover {
+            background: #e9ecef;
+            border-color: #d1d5db;
+        }
+
+        .output-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            min-height: 150px;
+        }
+
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .output-header h3 {
+            color: #333;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .copy-btn {
+            background: transparent;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #666;
+        }
+
+        .copy-btn:hover {
+            background: #e9ecef;
+            border-color: #9ca3af;
+        }
+
+        .copy-btn.copied {
+            background: #10b981;
+            border-color: #10b981;
+            color: white;
+        }
+
+        .translated-text {
+            color: #333;
+            font-size: 16px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .loading.hidden {
+            display: none;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            header h1 {
+                font-size: 2rem;
+            }
+            
+            main {
+                padding: 20px;
+            }
+            
+            .language-selector {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .lang-box {
+                max-width: 100%;
+            }
+            
+            .swap-btn {
+                transform: rotate(90deg);
+            }
+            
+            .swap-btn:hover {
+                transform: rotate(270deg);
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .translate-btn,
+            .clear-btn {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            header h1 {
+                font-size: 1.8rem;
+            }
+            
+            main {
+                padding: 15px;
+            }
+            
+            #sourceText {
+                font-size: 16px;
+            }
+            
+            .translated-text {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Polish-English Translator</h1>
+            <p>Translate words, phrases, and paragraphs between Polish and English</p>
+        </header>
+
+        <main>
+            <div class="language-selector">
+                <div class="lang-box">
+                    <select id="sourceLang">
+                        <option value="pl">Polish</option>
+                        <option value="en">English</option>
+                    </select>
+                </div>
+                
+                <button id="swapLanguages" class="swap-btn" title="Swap languages">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
+                    </svg>
+                </button>
+                
+                <div class="lang-box">
+                    <select id="targetLang">
+                        <option value="en">English</option>
+                        <option value="pl">Polish</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="translation-area">
+                <div class="input-section">
+                    <textarea 
+                        id="sourceText" 
+                        placeholder="Enter text to translate (words, phrases, or paragraphs)..."
+                        rows="8"
+                    ></textarea>
+                    <div class="char-count">
+                        <span id="charCount">0</span> characters
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button id="translateBtn" class="translate-btn">
+                        Translate
+                    </button>
+                    <button id="clearBtn" class="clear-btn">
+                        Clear
+                    </button>
+                </div>
+
+                <div class="output-section">
+                    <div class="output-header">
+                        <h3>Translation</h3>
+                        <button id="copyBtn" class="copy-btn" title="Copy translation">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="translatedText" class="translated-text">
+                        Translation will appear here...
+                    </div>
+                </div>
+            </div>
+
+            <div id="loading" class="loading hidden">
+                <div class="spinner"></div>
+                <p>Translating...</p>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        class Translator {
+            constructor() {
+                this.sourceLang = document.getElementById('sourceLang');
+                this.targetLang = document.getElementById('targetLang');
+                this.sourceText = document.getElementById('sourceText');
+                this.translatedText = document.getElementById('translatedText');
+                this.translateBtn = document.getElementById('translateBtn');
+                this.clearBtn = document.getElementById('clearBtn');
+                this.swapBtn = document.getElementById('swapLanguages');
+                this.copyBtn = document.getElementById('copyBtn');
+                this.charCount = document.getElementById('charCount');
+                this.loading = document.getElementById('loading');
+                
+                this.initializeEventListeners();
+                this.updateCharCount();
+            }
+            
+            initializeEventListeners() {
+                this.translateBtn.addEventListener('click', () => this.translate());
+                this.clearBtn.addEventListener('click', () => this.clear());
+                this.swapBtn.addEventListener('click', () => this.swapLanguages());
+                this.copyBtn.addEventListener('click', () => this.copyTranslation());
+                this.sourceText.addEventListener('input', () => this.updateCharCount());
+                this.sourceLang.addEventListener('change', () => this.updateTargetLanguage());
+                
+                // Allow translation on Enter key (with Shift for new line)
+                this.sourceText.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        this.translate();
+                    }
+                });
+            }
+            
+            updateCharCount() {
+                const count = this.sourceText.value.length;
+                this.charCount.textContent = count;
+            }
+            
+            updateTargetLanguage() {
+                if (this.sourceLang.value === this.targetLang.value) {
+                    this.targetLang.value = this.sourceLang.value === 'pl' ? 'en' : 'pl';
+                }
+            }
+            
+            swapLanguages() {
+                const tempLang = this.sourceLang.value;
+                this.sourceLang.value = this.targetLang.value;
+                this.targetLang.value = tempLang;
+                
+                const tempText = this.sourceText.value;
+                this.sourceText.value = this.translatedText.textContent === 'Translation will appear here...' ? '' : this.translatedText.textContent;
+                this.translatedText.textContent = tempText || 'Translation will appear here...';
+                
+                this.updateCharCount();
+            }
+            
+            async translate() {
+                const text = this.sourceText.value.trim();
+                
+                if (!text) {
+                    this.showMessage('Please enter text to translate');
+                    return;
+                }
+                
+                const sourceLang = this.sourceLang.value;
+                const targetLang = this.targetLang.value;
+                
+                this.showLoading(true);
+                this.translateBtn.disabled = true;
+                
+                try {
+                    const translation = await this.fetchTranslation(text, sourceLang, targetLang);
+                    this.translatedText.textContent = translation;
+                } catch (error) {
+                    console.error('Translation error:', error);
+                    this.showMessage('Translation failed. Please try again.');
+                    this.translatedText.textContent = 'Translation failed. Please try again.';
+                } finally {
+                    this.showLoading(false);
+                    this.translateBtn.disabled = false;
+                }
+            }
+            
+            async fetchTranslation(text, sourceLang, targetLang) {
+                // Using MyMemory API (free, no API key required)
+                const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${sourceLang}|${targetLang}`;
+                
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.responseStatus === 200 && data.responseData.translatedText) {
+                    return data.responseData.translatedText;
+                } else {
+                    throw new Error('Translation API returned an error');
+                }
+            }
+            
+            clear() {
+                this.sourceText.value = '';
+                this.translatedText.textContent = 'Translation will appear here...';
+                this.updateCharCount();
+                this.sourceText.focus();
+            }
+            
+            async copyTranslation() {
+                const text = this.translatedText.textContent;
+                
+                if (text === 'Translation will appear here...' || text === 'Translation failed. Please try again.') {
+                    this.showMessage('No translation to copy');
+                    return;
+                }
+                
+                try {
+                    await navigator.clipboard.writeText(text);
+                    this.showCopySuccess();
+                } catch (err) {
+                    console.error('Failed to copy text: ', err);
+                    this.showMessage('Failed to copy translation');
+                }
+            }
+            
+            showCopySuccess() {
+                const originalHTML = this.copyBtn.innerHTML;
+                this.copyBtn.innerHTML = `
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                `;
+                this.copyBtn.classList.add('copied');
+                
+                setTimeout(() => {
+                    this.copyBtn.innerHTML = originalHTML;
+                    this.copyBtn.classList.remove('copied');
+                }, 2000);
+            }
+            
+            showMessage(message) {
+                // Create a temporary message element
+                const messageEl = document.createElement('div');
+                messageEl.className = 'message';
+                messageEl.textContent = message;
+                messageEl.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: #333;
+                    color: white;
+                    padding: 12px 20px;
+                    border-radius: 8px;
+                    z-index: 1000;
+                    animation: slideIn 0.3s ease;
+                `;
+                
+                document.body.appendChild(messageEl);
+                
+                setTimeout(() => {
+                    messageEl.style.animation = 'slideOut 0.3s ease';
+                    setTimeout(() => {
+                        document.body.removeChild(messageEl);
+                    }, 300);
+                }, 3000);
+            }
+            
+            showLoading(show) {
+                if (show) {
+                    this.loading.classList.remove('hidden');
+                } else {
+                    this.loading.classList.add('hidden');
+                }
+            }
+        }
+
+        // Add CSS animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            
+            @keyframes slideOut {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Initialize the translator when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new Translator();
+        });
+    </script>
+</body>
+</html>
