@@ -1,0 +1,649 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Laptop Returns Dashboard</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --accent: #2563eb;
+      --success: #059669;
+      --warning: #d97706;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    .container {
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+    h1 {
+      font-size: 1.3rem;
+      margin: 0 0 6px;
+    }
+    .sub {
+      color: var(--muted);
+      margin-bottom: 14px;
+      font-size: 0.92rem;
+    }
+    .grid {
+      display: grid;
+      gap: 12px;
+    }
+    .cards {
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      margin-bottom: 12px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+    }
+    .card .label {
+      color: var(--muted);
+      font-size: 0.8rem;
+      margin-bottom: 6px;
+    }
+    .card .value {
+      font-size: 1.35rem;
+      font-weight: 700;
+    }
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+    .filters {
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      align-items: end;
+    }
+    label {
+      display: block;
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-bottom: 5px;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.9rem;
+      background: #fff;
+    }
+    button {
+      cursor: pointer;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      font-weight: 600;
+    }
+    button.secondary {
+      background: #fff;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .muted { color: var(--muted); font-size: 0.85rem; }
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #fff;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 1150px;
+    }
+    th, td {
+      border-bottom: 1px solid var(--border);
+      padding: 8px;
+      font-size: 0.82rem;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      position: sticky;
+      top: 0;
+      background: #f9fafb;
+      cursor: pointer;
+      white-space: nowrap;
+      user-select: none;
+    }
+    tr:hover td { background: #fafafa; }
+    .pagination {
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .analytics {
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    }
+    .list {
+      margin: 0;
+      padding-left: 18px;
+      max-height: 250px;
+      overflow: auto;
+    }
+    .trend {
+      width: 100%;
+      height: 240px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #fff;
+      padding: 8px;
+    }
+    .status {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: #eff6ff;
+      color: #1d4ed8;
+    }
+    @media (max-width: 720px) {
+      .container { padding: 10px; }
+      h1 { font-size: 1.1rem; }
+      .card .value { font-size: 1.2rem; }
+      .trend { height: 210px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Laptop Returns Dashboard</h1>
+    <div class="sub">
+      Source: Google Sheet tab <b>ReturnsRecord</b> only.
+      <span class="badge" id="lastRefresh">Loading...</span>
+    </div>
+
+    <div class="grid cards">
+      <div class="card">
+        <div class="label">Returns Today (Europe/Warsaw)</div>
+        <div class="value" id="kpiToday">0</div>
+      </div>
+      <div class="card">
+        <div class="label">Status = W naprawie</div>
+        <div class="value" id="kpiRepair">0</div>
+      </div>
+      <div class="card">
+        <div class="label">Status = W serwisie zewnętrznym</div>
+        <div class="value" id="kpiExternal">0</div>
+      </div>
+      <div class="card">
+        <div class="label">Filtered Rows</div>
+        <div class="value" id="kpiFiltered">0</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="grid filters">
+        <div>
+          <label for="dateFrom">Date from (Column A)</label>
+          <input type="date" id="dateFrom" />
+        </div>
+        <div>
+          <label for="dateTo">Date to (Column A)</label>
+          <input type="date" id="dateTo" />
+        </div>
+        <div>
+          <label for="customerFilter">Customer name (Column F)</label>
+          <input id="customerFilter" type="text" placeholder="e.g. Jan Kowalski" />
+        </div>
+        <div>
+          <label for="statusFilter">Marketplace status (Column H)</label>
+          <select id="statusFilter">
+            <option value="">All</option>
+          </select>
+        </div>
+        <div>
+          <label for="physicalFilter">Physical status/location (Column K)</label>
+          <select id="physicalFilter">
+            <option value="">All</option>
+          </select>
+        </div>
+        <div>
+          <label for="reasonSearch">Reason keyword (Column I)</label>
+          <input id="reasonSearch" type="text" placeholder="e.g. screen" />
+        </div>
+        <div class="row">
+          <button id="clearBtn" class="secondary" type="button">Clear Filters</button>
+          <button id="refreshBtn" type="button">Refresh Data</button>
+        </div>
+      </div>
+      <div class="status" id="resultStatus"></div>
+    </div>
+
+    <div class="panel">
+      <div class="row" style="justify-content:space-between;">
+        <strong>Returns Records (A-M)</strong>
+        <div class="muted">Tap a column header to sort.</div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr id="tableHead"></tr></thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+      <div class="pagination">
+        <div class="muted" id="pageInfo">Page 1</div>
+        <div class="row">
+          <select id="pageSize" style="width:90px;">
+            <option>20</option>
+            <option selected>50</option>
+            <option>100</option>
+          </select>
+          <button id="prevBtn" class="secondary" type="button">Prev</button>
+          <button id="nextBtn" class="secondary" type="button">Next</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid analytics">
+      <div class="panel">
+        <strong>Top Repeated Reasons (Column I)</strong>
+        <ol class="list" id="topReasons"></ol>
+      </div>
+      <div class="panel">
+        <strong>Top Marketplaces (Column C)</strong>
+        <ol class="list" id="topMarketplaces"></ol>
+      </div>
+      <div class="panel" style="grid-column: 1 / -1;">
+        <strong>Returns Trend Over Time (Column A)</strong>
+        <canvas id="trendCanvas" class="trend"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ---- CONFIG ----
+    const SHEET_ID = "1bFiGJjn1bE1f7Ipmg1kY7r-e95_U0Ovk9ndZMOZGyRk";
+    const SHEET_NAME = "ReturnsRecord";
+    const GVIZ_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?sheet=${encodeURIComponent(SHEET_NAME)}&tqx=out:json`;
+
+    // Expected A..M columns
+    const COLUMNS = [
+      "Main Return Date", "Order number (system)", "Marketplace name",
+      "Order purchase date", "Order number (marketplace)", "Customer name",
+      "Claim ticket opened date", "Marketplace order status", "Reason for return",
+      "Total price", "Physical status/location", "Marketplace order link",
+      "Record added date"
+    ];
+
+    const IDX = {
+      mainDate: 0, orderSystem: 1, marketplace: 2, purchaseDate: 3, orderMarketplace: 4,
+      customer: 5, claimDate: 6, marketStatus: 7, reason: 8, price: 9, physical: 10, link: 11, addedDate: 12
+    };
+
+    const state = {
+      allRows: [],
+      filteredRows: [],
+      sortIndex: 0,
+      sortAsc: true,
+      page: 1,
+      pageSize: 50
+    };
+
+    const el = id => document.getElementById(id);
+
+    function debounce(fn, ms) {
+      let t;
+      return (...args) => {
+        clearTimeout(t);
+        t = setTimeout(() => fn(...args), ms);
+      };
+    }
+
+    function normalizeText(input) {
+      return String(input || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .trim();
+    }
+
+    function parseGvizDate(raw) {
+      if (!raw) return null;
+      if (raw instanceof Date) return new Date(raw.getFullYear(), raw.getMonth(), raw.getDate());
+      const asString = String(raw).trim();
+      const gviz = asString.match(/^Date\((\d+),(\d+),(\d+)\)$/);
+      if (gviz) return new Date(Number(gviz[1]), Number(gviz[2]), Number(gviz[3]));
+
+      // Support common date strings: yyyy-mm-dd, dd.mm.yyyy, dd/mm/yyyy
+      const iso = asString.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+      if (iso) return new Date(+iso[1], +iso[2] - 1, +iso[3]);
+      const eu = asString.match(/^(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{4})$/);
+      if (eu) return new Date(+eu[3], +eu[2] - 1, +eu[1]);
+
+      const d = new Date(asString);
+      return Number.isNaN(d.getTime()) ? null : new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    }
+
+    function dateToYMD(d) {
+      if (!d) return "";
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${day}`;
+    }
+
+    function warsawTodayYMD() {
+      const now = new Date();
+      const warsaw = new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Europe/Warsaw",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+      }).format(now);
+      return warsaw; // yyyy-mm-dd in en-CA
+    }
+
+    function extractCellValue(cell) {
+      if (!cell) return "";
+      if (cell.f != null) return String(cell.f);
+      if (cell.v == null) return "";
+      return cell.v;
+    }
+
+    function listTop(items, targetId, topN = 12) {
+      const map = new Map();
+      for (const v of items) {
+        const k = String(v || "").trim();
+        if (!k) continue;
+        map.set(k, (map.get(k) || 0) + 1);
+      }
+      const sorted = [...map.entries()].sort((a, b) => b[1] - a[1]).slice(0, topN);
+      const target = el(targetId);
+      if (!sorted.length) {
+        target.innerHTML = "<li>No data</li>";
+        return;
+      }
+      target.innerHTML = sorted.map(([k, n]) => `<li>${escapeHtml(k)} <b>(${n})</b></li>`).join("");
+    }
+
+    function escapeHtml(text) {
+      return String(text)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function drawTrend(rows) {
+      const canvas = el("trendCanvas");
+      const ctx = canvas.getContext("2d");
+      const dpr = window.devicePixelRatio || 1;
+      const w = canvas.clientWidth;
+      const h = canvas.clientHeight;
+      canvas.width = Math.max(300, w * dpr);
+      canvas.height = Math.max(150, h * dpr);
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, w, h);
+
+      const counts = new Map();
+      for (const r of rows) {
+        const key = r.mainDateYMD;
+        if (!key) continue;
+        counts.set(key, (counts.get(key) || 0) + 1);
+      }
+      const points = [...counts.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+      if (!points.length) {
+        ctx.fillStyle = "#6b7280";
+        ctx.fillText("No trend data for selected filters", 12, 24);
+        return;
+      }
+
+      const values = points.map(p => p[1]);
+      const max = Math.max(...values);
+      const min = 0;
+      const left = 40, right = 12, top = 12, bottom = 28;
+      const plotW = w - left - right;
+      const plotH = h - top - bottom;
+
+      // axes
+      ctx.strokeStyle = "#d1d5db";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(left, top);
+      ctx.lineTo(left, h - bottom);
+      ctx.lineTo(w - right, h - bottom);
+      ctx.stroke();
+
+      // line
+      ctx.strokeStyle = "#2563eb";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      points.forEach(([, v], i) => {
+        const x = left + (i / Math.max(1, points.length - 1)) * plotW;
+        const y = top + (1 - (v - min) / Math.max(1, max - min)) * plotH;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+
+      // y labels
+      ctx.fillStyle = "#6b7280";
+      ctx.font = "11px system-ui";
+      ctx.fillText(String(max), 8, top + 4);
+      ctx.fillText("0", 20, h - bottom + 12);
+
+      // x labels (first and last)
+      const first = points[0][0];
+      const last = points[points.length - 1][0];
+      ctx.fillText(first, left, h - 6);
+      const widthLast = ctx.measureText(last).width;
+      ctx.fillText(last, w - right - widthLast, h - 6);
+    }
+
+    function buildTableHeader() {
+      const head = el("tableHead");
+      head.innerHTML = "";
+      COLUMNS.forEach((name, i) => {
+        const th = document.createElement("th");
+        th.textContent = name;
+        th.addEventListener("click", () => {
+          if (state.sortIndex === i) state.sortAsc = !state.sortAsc;
+          else { state.sortIndex = i; state.sortAsc = true; }
+          state.page = 1;
+          render();
+        });
+        head.appendChild(th);
+      });
+    }
+
+    function sortRows(rows) {
+      const idx = state.sortIndex;
+      const asc = state.sortAsc ? 1 : -1;
+      return rows.sort((a, b) => {
+        const va = a.raw[idx] ?? "";
+        const vb = b.raw[idx] ?? "";
+        if (idx === IDX.mainDate || idx === IDX.purchaseDate || idx === IDX.claimDate || idx === IDX.addedDate) {
+          const da = parseGvizDate(va);
+          const db = parseGvizDate(vb);
+          return ((da?.getTime() || 0) - (db?.getTime() || 0)) * asc;
+        }
+        return String(va).localeCompare(String(vb), undefined, { sensitivity: "base", numeric: true }) * asc;
+      });
+    }
+
+    function applyFilters() {
+      const from = el("dateFrom").value;
+      const to = el("dateTo").value;
+      const customer = normalizeText(el("customerFilter").value);
+      const status = el("statusFilter").value;
+      const physical = el("physicalFilter").value;
+      const reasonSearch = normalizeText(el("reasonSearch").value);
+
+      state.filteredRows = state.allRows.filter(r => {
+        if (from && (!r.mainDateYMD || r.mainDateYMD < from)) return false;
+        if (to && (!r.mainDateYMD || r.mainDateYMD > to)) return false;
+        if (customer && !r.customerNorm.includes(customer)) return false;
+        if (status && r.marketStatus !== status) return false;
+        if (physical && r.physicalStatus !== physical) return false;
+        if (reasonSearch && !r.reasonNorm.includes(reasonSearch)) return false;
+        return true;
+      });
+      state.page = 1;
+      render();
+    }
+
+    function render() {
+      const sorted = sortRows([...state.filteredRows]);
+      const pageSize = state.pageSize;
+      const total = sorted.length;
+      const pages = Math.max(1, Math.ceil(total / pageSize));
+      if (state.page > pages) state.page = pages;
+      const start = (state.page - 1) * pageSize;
+      const pageRows = sorted.slice(start, start + pageSize);
+
+      el("kpiFiltered").textContent = total.toLocaleString();
+      el("resultStatus").textContent = `${total.toLocaleString()} rows match current filters`;
+
+      const body = el("tableBody");
+      body.innerHTML = pageRows.map(r => {
+        const cells = r.raw.map((v, i) => {
+          if (i === IDX.link && String(v || "").startsWith("http")) {
+            return `<td><a href="${escapeHtml(String(v))}" target="_blank" rel="noopener">Open link</a></td>`;
+          }
+          return `<td>${escapeHtml(String(v ?? ""))}</td>`;
+        }).join("");
+        return `<tr>${cells}</tr>`;
+      }).join("");
+
+      el("pageInfo").textContent = `Page ${state.page} / ${pages} (${total.toLocaleString()} rows)`;
+      el("prevBtn").disabled = state.page <= 1;
+      el("nextBtn").disabled = state.page >= pages;
+
+      listTop(state.filteredRows.map(r => r.reasonRaw), "topReasons");
+      listTop(state.filteredRows.map(r => r.marketplace), "topMarketplaces");
+      drawTrend(state.filteredRows);
+    }
+
+    function fillSelectOptions() {
+      const statuses = [...new Set(state.allRows.map(r => r.marketStatus).filter(Boolean))]
+        .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+      const physicals = [...new Set(state.allRows.map(r => r.physicalStatus).filter(Boolean))]
+        .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+
+      const statusSel = el("statusFilter");
+      const physSel = el("physicalFilter");
+      statusSel.innerHTML = '<option value="">All</option>' + statuses.map(v => `<option>${escapeHtml(v)}</option>`).join("");
+      physSel.innerHTML = '<option value="">All</option>' + physicals.map(v => `<option>${escapeHtml(v)}</option>`).join("");
+    }
+
+    function updateKpisGlobal() {
+      const today = warsawTodayYMD();
+      const todayCount = state.allRows.reduce((n, r) => n + (r.mainDateYMD === today ? 1 : 0), 0);
+      const repair = state.allRows.reduce((n, r) => n + (r.marketStatus === "W naprawie" ? 1 : 0), 0);
+      const external = state.allRows.reduce((n, r) => n + (r.marketStatus === "W serwisie zewnętrznym" ? 1 : 0), 0);
+      el("kpiToday").textContent = todayCount.toLocaleString();
+      el("kpiRepair").textContent = repair.toLocaleString();
+      el("kpiExternal").textContent = external.toLocaleString();
+    }
+
+    async function loadData() {
+      el("lastRefresh").textContent = "Loading...";
+      try {
+        const res = await fetch(GVIZ_URL, { cache: "no-store" });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const txt = await res.text();
+
+        // gviz wraps JSON in JS callback
+        const jsonStart = txt.indexOf("{");
+        const jsonEnd = txt.lastIndexOf("}");
+        const payload = JSON.parse(txt.slice(jsonStart, jsonEnd + 1));
+        const rows = payload.table?.rows || [];
+
+        state.allRows = rows.map(r => {
+          const vals = (r.c || []).map(extractCellValue);
+          while (vals.length < 13) vals.push("");
+
+          const mainDateObj = parseGvizDate(vals[IDX.mainDate]);
+          const mainDateYMD = dateToYMD(mainDateObj);
+
+          return {
+            raw: vals,
+            mainDateYMD,
+            customerNorm: normalizeText(vals[IDX.customer]),
+            reasonNorm: normalizeText(vals[IDX.reason]),
+            reasonRaw: String(vals[IDX.reason] || "").trim(),
+            marketStatus: String(vals[IDX.marketStatus] || "").trim(),
+            physicalStatus: String(vals[IDX.physical] || "").trim(),
+            marketplace: String(vals[IDX.marketplace] || "").trim()
+          };
+        });
+
+        fillSelectOptions();
+        updateKpisGlobal();
+        state.filteredRows = [...state.allRows];
+        state.page = 1;
+        render();
+
+        const now = new Date();
+        el("lastRefresh").textContent = `Rows: ${state.allRows.length.toLocaleString()} | ${now.toLocaleTimeString()}`;
+      } catch (err) {
+        console.error(err);
+        el("resultStatus").textContent = "Could not load Google Sheet. Make sure the sheet is public and tab name is exactly ReturnsRecord.";
+        el("lastRefresh").textContent = "Load failed";
+      }
+    }
+
+    function wireEvents() {
+      const runFilter = debounce(applyFilters, 120);
+      ["dateFrom", "dateTo", "customerFilter", "statusFilter", "physicalFilter", "reasonSearch"]
+        .forEach(id => el(id).addEventListener("input", runFilter));
+      ["statusFilter", "physicalFilter"].forEach(id => el(id).addEventListener("change", applyFilters));
+
+      el("clearBtn").addEventListener("click", () => {
+        ["dateFrom", "dateTo", "customerFilter", "statusFilter", "physicalFilter", "reasonSearch"]
+          .forEach(id => { el(id).value = ""; });
+        applyFilters();
+      });
+      el("refreshBtn").addEventListener("click", loadData);
+
+      el("prevBtn").addEventListener("click", () => { state.page = Math.max(1, state.page - 1); render(); });
+      el("nextBtn").addEventListener("click", () => { state.page += 1; render(); });
+      el("pageSize").addEventListener("change", e => {
+        state.pageSize = Number(e.target.value) || 50;
+        state.page = 1;
+        render();
+      });
+
+      window.addEventListener("resize", debounce(() => drawTrend(state.filteredRows), 150));
+    }
+
+    buildTableHeader();
+    wireEvents();
+    loadData();
+  </script>
+</body>
+</html>
